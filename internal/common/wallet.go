@@ -6,7 +6,6 @@ import (
 	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 )
 
 // structure definitions
@@ -31,10 +30,6 @@ func NewWallet() (*Wallet, error) {
 
 	// done
 	return wallet, nil
-}
-
-func (w Wallet) String() string {
-	return fmt.Sprintf("%s (%s)", w.Name, string(w.Public))
 }
 
 func (w Wallet) MarshalJSON() ([]byte, error) {

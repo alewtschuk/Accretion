@@ -1,0 +1,61 @@
+name: 'accretion'
+services:
+  alpha:
+    image: accretion-validator
+    hostname: validator-1
+    build:
+      context: docker/validator
+    env_file:
+      - docker/validator/.env
+    environment:
+      GOCACHE: /go-build-cache
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - ./internal:/internal
+      - ./.go/pkg:/go/pkg/mod
+      - ./.go-cache:/go-build-cache
+    working_dir: /internal/validator
+  beta:
+    hostname: validator-2
+    image: accretion-validator
+    env_file:
+      - docker/validator/.env
+    environment:
+      GOCACHE: /go-build-cache
+    ports:
+      - "127.0.0.1:3002:3000"
+    volumes:
+      - ./internal:/internal
+      - ./.go/pkg:/go/pkg/mod
+      - ./.go-cache:/go-build-cache
+    working_dir: /internal/validator
+  gamma:
+    hostname: validator-3
+    image: accretion-validator
+    env_file:
+      - docker/validator/.env
+    environment:
+      GOCACHE: /go-build-cache
+    ports:
+      - "127.0.0.1:3003:3000"
+    volumes:
+      - ./internal:/internal
+      - ./.go/pkg:/go/pkg/mod
+      - ./.go-cache:/go-build-cache
+    working_dir: /internal/validator
+  delta:
+    hostname: validator-4
+    image: accretion-validator
+    env_file:
+      - docker/validator/.env
+    environment:
+      GOCACHE: /go-build-cache
+    ports:
+      - "127.0.0.1:3004:3000"
+    volumes:
+      - ./internal:/internal
+      - ./.go/pkg:/go/pkg/mod
+      - ./.go-cache:/go-build-cache
+    working_dir: /internal/validator
+    

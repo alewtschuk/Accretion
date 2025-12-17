@@ -35,3 +35,5 @@ data/*
 build/*
 !data/.gitkeep
 !build/.gitkeep
+.go/
+.go-cache/

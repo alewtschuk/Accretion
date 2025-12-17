@@ -63,6 +63,10 @@ type Transaction interface {
 	MemSend(hosts ...interface{})
 }
 
+type TxInstruction interface {
+	encodeInstructions() []byte
+}
+
 var transactionTypes = map[int]string{
 	TYPESEND: "Send",
 	//TypeMint: "Mint",

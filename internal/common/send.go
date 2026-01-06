@@ -5,6 +5,7 @@ package common
 import (
 	"crypto/ed25519"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 )
@@ -110,13 +111,13 @@ func (t TxSend) String() string {
 
 	// done
 	return fmt.Sprintf(
-		"%s sent %d to %s; signature: %s",
+		"\033[1;31m0x%s\033[22m sent \033[1;31m%d\033[22m to \033[1;31m0x%s\033[22;0m -> signature: \033[1;34m0x%s\033[22;0m",
 
-		base64.StdEncoding.EncodeToString(t.From),
+		hex.EncodeToString(t.From)[0:6],
 		t.Quantity,
-		base64.StdEncoding.EncodeToString(t.To),
+		hex.EncodeToString(t.To)[0:6],
 
 		// super
-		t.Tx.String(),
+		t.Tx.String()[:8],
 	)
 }

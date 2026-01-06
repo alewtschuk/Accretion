@@ -58,6 +58,12 @@ func NewMemPool() *MemPool {
 }
 
 // method definitions
+func (m *MemPool) Len() int {
+
+	// done
+	return len(m.Pending)
+}
+
 func (m *MemPool) Add(t common.ITx) {
 
 	// fast fail
@@ -70,31 +76,49 @@ func (m *MemPool) Add(t common.ITx) {
 		return
 	}
 
-	// initialized data
-	var data []byte = []byte{}
-
-	// serialize json
-	data, _ = t.MarshalJSON()
-
 	// verified news
 	if !slices.Contains(m.Pending, t) {
 
+		// initialized data
+		// var data []byte = []byte{}
+
+		// serialize json
+		// data, _ = t.MarshalJSON()
+
 		// new news
-		fmt.Printf("[mempool] \"%s\"\n", string(data))
+		// fmt.Printf("[mempool] \"%s\"\n", string(data))
 	} else {
 
 		// old news
 		fmt.Printf("[mempool] Yeah, we know\n")
 	}
+
+	// block building
+	{
+
+		// initialized data
+		var err error = nil
+		var b common.IBlock = nil
+		var bb common.IBlockBuilder = common.NewBlockBuilder()
+
+		// add the transaction to the block
+		bb.AddTransaction(t)
+
+		// build the block
+		b, err = bb.Build()
+		if err != nil {
+			fmt.Printf("Failed to build block!\n")
+		}
+
+		// print the block
+		fmt.Printf("%+v\n", b)
+	}
 }
 
-func (m *MemPool) List() []common.ITx {
-
-	// logs
-	fmt.Printf("[mempool] Spilling the tea\n")
+func (m *MemPool) List(lim int) []common.ITx {
 
 	// done
-	return m.Pending
+	return m.Pending[0:lim]
 }
 
 func (m *MemPool) Clean() {

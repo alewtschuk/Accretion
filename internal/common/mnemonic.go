@@ -236,6 +236,8 @@ func (mn *Mnemonic) toEntropy(words []string) []byte {
 	return entropy
 }
 
-// func (mn *Mnemonic) toMnemonic([]byte) string {
+func (mn *Mnemonic) toMnemonic([]byte) string {
 
-// }
+	// STUB
+	return ""
+}

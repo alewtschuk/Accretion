@@ -3,7 +3,6 @@ package main
 
 // imports
 import (
-	"accretion/internal/common/genproto/validator"
 	"context"
 	"fmt"
 
@@ -11,11 +10,9 @@ import (
 )
 
 // struct definitions
-type GrpcServer struct {
-	Peers []*Peer
-}
+type GrpcValidator struct{}
 
-func (g GrpcServer) Heartbeat(
+func (g GrpcValidator) Heartbeat(
 	ctx context.Context,
 	in *emptypb.Empty,
 ) (
@@ -24,30 +21,7 @@ func (g GrpcServer) Heartbeat(
 ) {
 
 	// log
-	fmt.Printf("Ping\n")
-
-	// done
-	return nil, nil
-}
-
-func (g GrpcServer) Gossip(
-	ctx context.Context,
-	in *validator.Topic,
-) (
-	*emptypb.Empty,
-	error,
-) {
-
-	// iterate through each peer
-	for i := 0; i < len(g.Peers); i++ {
-
-		// FIX: causes infinite loop in services
-		// _, err := g.Peers[i].conn.Gossip(ctx, in)
-		// if err != nil {
-		// 	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-		// }
-		fmt.Printf("%s, did you know that \"%s\"?\n", g.Peers[i].Name(), in.GetName())
-	}
+	fmt.Printf("DING DONG!!!\n")
 
 	// done
 	return nil, nil

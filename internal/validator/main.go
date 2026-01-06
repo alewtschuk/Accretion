@@ -3,7 +3,10 @@ package main
 
 // imports
 import (
+	"accretion/internal/common/genproto/mempool"
 	"accretion/internal/common/genproto/validator"
+	mmp "accretion/internal/validator/mempool"
+	"accretion/internal/validator/validation"
 	"fmt"
 	"net"
 	"os"
@@ -17,7 +20,7 @@ import (
 var (
 	host           string
 	peer_hostnames []string
-	peers          []*Peer
+	peers          []*validation.Peer
 )
 
 // early
@@ -40,10 +43,10 @@ func init() {
 
 		// initialized data
 		var err error = nil
-		var p *Peer = nil
+		var p *validation.Peer = nil
 
 		// construct a new peer
-		p, err = NewPeer(peer_hostnames[i])
+		p, err = validation.NewPeer(peer_hostnames[i])
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to connect to %s\n", peer_hostnames[i])
 		}
@@ -58,27 +61,44 @@ func main() {
 
 	// initialized data
 	var err error = nil
-	var grpcServer *grpc.Server = nil
-	var listen net.Listener = nil
-	var service GrpcServer = GrpcServer{
-		Peers: peers,
+	var grpcMempool *grpc.Server = nil
+	var grpcValidator *grpc.Server = nil
+
+	var mplisten net.Listener = nil
+	var valisten net.Listener = nil
+
+	var mp mmp.GrpcMemPool = mmp.GrpcMemPool{
+		Pending: mmp.NewMemPool(),
 	}
+	var v GrpcValidator = GrpcValidator{}
 
 	// construct a grpc server
-	grpcServer = grpc.NewServer()
+	grpcMempool = grpc.NewServer()
+	grpcValidator = grpc.NewServer()
+
+	// register the mempool service
+	mempool.RegisterMemPoolServiceServer(grpcMempool, &mp)
 
 	// register the validator service
-	validator.RegisterValidatorServiceServer(grpcServer, service)
+	validator.RegisterValidatorServiceServer(grpcValidator, &v)
 
 	// construct a listener
-	listen, err = net.Listen("tcp", ":3000")
+	mplisten, err = net.Listen("tcp", ":3000")
 	if err != nil {
 		os.Exit(1)
 	}
 
-	// logs
-	fmt.Printf("%s up!\n", host)
+	// construct a listener
+	valisten, err = net.Listen("tcp", ":3001")
+	if err != nil {
+		os.Exit(1)
+	}
+
+	go func() {
+		// listen and serve
+		grpcValidator.Serve(valisten)
+	}()
 
 	// listen and serve
-	grpcServer.Serve(listen)
+	grpcMempool.Serve(mplisten)
 }

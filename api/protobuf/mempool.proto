@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package validator;
+
+option go_package = "accretion/internal/mempool";
+
+import "google/protobuf/empty.proto";
+
+service MemPoolService {
+  rpc Gossip(Topic) returns (google.protobuf.Empty) {}
+  rpc Indulge(google.protobuf.Empty) returns (TopicsResponse) {}
+  rpc Send(TxSend) returns (google.protobuf.Empty) {}
+}
+
+message Topic {
+  string name = 1;
+}
+
+message TopicsResponse {
+  repeated Topic topics = 1;
+}
+
+message TxSend {
+  string to = 1;
+  string from = 2;
+  uint64 quantity = 3;
+  bytes signature = 4; 
+}

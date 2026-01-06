@@ -1,13 +1,43 @@
+// package declaration
 package common
 
+// imports
 import (
-	"bytes"
-	"crypto/ed25519"
-	"encoding/binary"
-	"log"
-	"time"
+	"encoding/hex"
 )
 
+// interface definitions
+type ITx interface {
+
+	// Sign a transaction with a wallet
+	Sign(w *Wallet) error
+
+	// Verify a transaction's digital signature
+	Verify() bool
+
+	// Enforces that transaction fits protocol parameters
+	Enforce() bool
+
+	// Serialize a transaction into json
+	MarshalJSON() ([]byte, error)
+
+	// Serialize a transaction into a string
+	String() string
+}
+
+// structure definitions
+type Tx struct {
+	Signature []byte
+}
+
+// method definitions
+func (t Tx) String() string {
+
+	// encode the signature as a hexadecimal
+	return hex.EncodeToString(t.Signature)
+}
+
+/*
 const (
 	TYPESEND = iota
 	TYPEMINT
@@ -44,25 +74,6 @@ type TxSig []byte
 
 // Transaction addresses definition
 type TxAddresses []ed25519.PublicKey
-
-type Transaction interface {
-
-	// Sign a transaction with a wallet
-	Sign(w *Wallet) []byte
-
-	// Verify a transaction's digital signature
-	Verify() bool
-
-	// Enforces that transaction fits protocol parameters
-	Enforce() bool
-
-	// Serialize a transaction into json
-	Serialize() []byte
-
-	// Send a transaction to mempool
-	MemSend(hosts ...interface{})
-}
-
 type TxInstruction interface {
 	encodeInstructions() []byte
 }
@@ -108,3 +119,5 @@ func (txi *TxInstruct) encodeInstruction() []byte {
 	return largeBuf.Bytes()
 
 }
+
+*/

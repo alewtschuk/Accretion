@@ -8,9 +8,5 @@ import "google/protobuf/empty.proto";
 
 service ValidatorService {
   rpc Heartbeat(google.protobuf.Empty) returns (google.protobuf.Empty) {}
-  rpc Gossip(Topic) returns (google.protobuf.Empty) {}
 }
 
-message Topic {
-  string name = 1;
-}

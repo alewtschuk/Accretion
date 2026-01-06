@@ -1,5 +1,5 @@
 // package declaration
-package main
+package validation
 
 // imports
 import (

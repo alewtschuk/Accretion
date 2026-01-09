@@ -163,7 +163,7 @@ Create a new mnemonic using a random generated number as entropy.
 */
 func (mn *Mnemonic) generate(strength uint16) string {
 
-	if !(strength%32 != 0 && (strength < 128 || strength > 256)) {
+	if strength%32 != 0 || strength < 128 || strength > 256 {
 		log.Fatalf("ERROR: Invalid strength value. Allowed values are [128, 160, 192, 224, 256]")
 	}
 
@@ -175,6 +175,9 @@ func (mn *Mnemonic) generate(strength uint16) string {
 
 }
 
+/**
+ * Convert mnemonic word list to original entropy value.
+ */
 func (mn *Mnemonic) toEntropy(words []string) []byte {
 	if len(words)%3 > 0 {
 		log.Fatalf("ERROR: Number of words must be one of the following: [12, 15, 18, 21, 24]")
@@ -191,7 +194,13 @@ func (mn *Mnemonic) toEntropy(words []string) []byte {
 	wordIndex := 0
 	for _, word := range words {
 		// Find the words index in the wordlist
-		ndx, _ := slices.BinarySearch(mn.WordList[mn.Language], word)
+		ndx := -1
+		for idx, candidate := range mn.WordList[mn.Language] {
+			if candidate == word {
+				ndx = idx
+				break
+			}
+		}
 		if ndx < 0 {
 			log.Fatalf("ERROR: Unable to find '%s' in word list", word)
 		}
@@ -203,8 +212,8 @@ func (mn *Mnemonic) toEntropy(words []string) []byte {
 		wordIndex++
 	}
 
-	checkSumLengthBits := concatLenBits / 30
-	entropyLengthBits := concatLenBits - checkSumLengthBits
+	checksumLengthBits := concatLenBits / 33
+	entropyLengthBits := concatLenBits - checksumLengthBits
 
 	// Extract original entropy as bytes
 	entropy := make([]byte, entropyLengthBits/8)
@@ -219,15 +228,10 @@ func (mn *Mnemonic) toEntropy(words []string) []byte {
 	hash := sha256.New()
 	hash.Write(entropy)
 	hashBytes := hash.Sum(nil)
-	hashBits := make([]bool, 0, len(hashBytes)*8) // create bool slice to act as bit slice
-	for _, byt := range hashBytes {
-		for i := range 8 {
-			hashBits = append(hashBits, (byt&(1<<(7-i))) != 0)
-		}
-	}
+	hashBits := bytesToBits(hashBytes)
 
 	// Check all the checksum bits
-	for i := range checkSumLengthBits {
+	for i := range checksumLengthBits {
 		if concatBits[entropyLengthBits+i] != hashBits[i] {
 			log.Fatalf("ERROR: Failed checksum")
 		}
@@ -236,8 +240,57 @@ func (mn *Mnemonic) toEntropy(words []string) []byte {
 	return entropy
 }
 
-func (mn *Mnemonic) toMnemonic([]byte) string {
+/**
+ * Convert entropy data to mnemonic word list.
+ */
+func (mn *Mnemonic) toMnemonic(entropy []byte) string {
+	if len(entropy)%4 > 0 {
+		log.Fatalf("ERROR: Entropy length not a multiple of 32 bits")
+	}
 
-	// STUB
-	return ""
+	if len(entropy) == 0 {
+		log.Fatalf("ERROR: Entropy is empty")
+	}
+
+	hash := sha256.Sum256(entropy)
+	hashBits := bytesToBits(hash[:])
+	entropyBits := bytesToBits(entropy)
+
+	checksumLengthBits := len(entropyBits) / 32
+
+	concatBits := make([]bool, len(entropyBits)+checksumLengthBits)
+	copy(concatBits, entropyBits)
+	copy(concatBits[len(entropyBits):], hashBits[:checksumLengthBits])
+
+	var words []string
+	nwords := len(concatBits) / 11
+
+	for i := 0; i < nwords; i++ {
+		index := 0
+		for j := 0; j < 11; j++ {
+			index <<= 1
+			if concatBits[(i*11)+j] {
+				index |= 1
+			}
+		}
+		words = append(words, mn.WordList[mn.Language][index])
+	}
+
+	if mn.Delimiter != "" {
+		return strings.Join(words, mn.Delimiter)
+	}
+	return strings.Join(words, " ")
+}
+
+/*
+Converts bytes to bits
+*/
+func bytesToBits(data []byte) []bool {
+	bits := make([]bool, len(data)*8)
+	for i, byt := range data {
+		for j := range 8 {
+			bits[(i*8)+j] = (byt & (1 << (7 - j))) != 0
+		}
+	}
+	return bits
 }
